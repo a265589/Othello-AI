@@ -5,17 +5,8 @@
 #include <cstdlib>
 #include <ctime>
 
-
-
-
-
-
-#define search_depth 3
-#define H_BASE 1000000
-
-
-
-
+#define SEARCH_DEPTH 5
+#define H_BASE 10000000
 
 enum SPOT_STATE {
     EMPTY = 0,
@@ -27,12 +18,10 @@ int get_next_player(int player) {
     return 3 - player;
 }
 
-
-
 class Point {
 public:
     int x, y;
-  //  Point() : Point(0, 0) {}
+   Point() : Point(0, 0) {}
     Point(int x, int y) : x(x), y(y) {}
     bool operator==(const Point& rhs) const {
         return x == rhs.x && y == rhs.y;
@@ -65,11 +54,12 @@ const std::array<Point, 8> directions{ {
 class option
 {
 public:
+    int alpha, beta;
      std::array<std::array<int, SIZE>, SIZE> board;
      std::array<int, 3> disc_count;
 
     option(std::array<std::array<int, SIZE>, SIZE> &board_)
-        :board(board_)
+        :board(board_),alpha(-H_BASE),beta(H_BASE)
     {
         disc_count.fill(0);
 
@@ -173,9 +163,7 @@ public:
     void set_disc(Point p, int disc) {
 
         board[p.x][p.y] = disc;
-
     }
-
 
     int evaluate()
     {
@@ -212,9 +200,12 @@ int minimax(option now, int depth, bool MAXIMIZE, int cur_player)
         {
             return minimax(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
         }
-        else if (depth == search_depth)
+        else if (depth == SEARCH_DEPTH)
         {
+
+         
             return now.evaluate();
+           
         }
         else if (MAXIMIZE == true)
         {
@@ -246,11 +237,81 @@ int minimax(option now, int depth, bool MAXIMIZE, int cur_player)
             return H_min;
 
         }
+    }
+}
 
 
+
+
+
+int alpha_beta_pruning(option& now, int depth, bool MAXIMIZE, int cur_player)
+{
+
+
+    std::vector<Point> next_possible_step;
+
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            Point p = Point(i, j);
+            if (now.board[i][j] != EMPTY)
+                continue;
+            if (now.is_spot_valid(p, cur_player))
+                next_possible_step.push_back(p);
+        }
     }
 
 
+    for (auto p : next_possible_step)
+    {
+        option next = now;
+
+        if (now.alpha >= now.beta)
+        {
+            break;
+        }
+
+
+        next.flip_discs(p, cur_player);
+
+        if (depth == 0)
+        {
+            return alpha_beta_pruning(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
+        }
+        else if (depth == SEARCH_DEPTH)
+        {
+            return now.evaluate();
+        }
+        else if (MAXIMIZE == true)
+        {
+
+            int H_max = -H_BASE;
+
+            int H = alpha_beta_pruning(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
+
+            if (H > H_max)
+            {
+                 now.alpha = H_max = H;
+            }
+
+            return H_max;
+        }
+        else if (MAXIMIZE == false)
+        {
+
+            int H_min = H_BASE;
+
+
+            int H = alpha_beta_pruning(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
+
+            if (H < H_min)
+            {
+               now.beta  = H_min = H;
+            }
+
+            return H_min;
+
+        }
+    }
 }
 
 
@@ -294,37 +355,28 @@ void write_valid_spot(std::ofstream& fout) {
 
         start.flip_discs(p, player);
 
+        start.alpha = max_H;
+
         int H = minimax(start, 0, false, get_next_player(player));
 
         if ( H > max_H)
         {
              max_H = H;
              next_step_id = i;
+
         }
 
     }
 
     Point p = next_valid_spots[next_step_id];
-    
+
+   
+   
     // Remember to flush the output to ensure the last action is written to file.
     fout << p.x << " " << p.y << std::endl;
 
     fout.flush();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 int main(int, char** argv) {
