@@ -177,6 +177,17 @@ public:
 int minimax(option now, int depth, bool MAXIMIZE, int cur_player)
 {
 
+
+
+    if (depth == SEARCH_DEPTH)
+    {
+ 
+        std::cout << now.evaluate();
+        return now.evaluate();
+
+    }
+    
+
     std::vector<Point> next_possible_step;
 
     for (int i = 0; i < SIZE; i++) {
@@ -190,33 +201,24 @@ int minimax(option now, int depth, bool MAXIMIZE, int cur_player)
     }
 
 
-    for (auto p : next_possible_step)
-    {
-        option next = now;
 
-        next.flip_discs(p, cur_player);
-
-        if (depth == 0)
-        {
-            return minimax(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
-        }
-        else if (depth == SEARCH_DEPTH)
-        {
-
-         
-            return now.evaluate();
-           
-        }
-        else if (MAXIMIZE == true)
+       if (MAXIMIZE == true)
         {
 
             int H_max = -H_BASE;
 
-            int H = minimax(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
-
-            if (H > H_max)
+            for (auto p : next_possible_step)
             {
-                H_max = H;
+                option next = now;
+                next.set_disc(p, cur_player);
+                next.flip_discs(p, cur_player);
+
+                int H = minimax(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
+
+                if (H > H_max)
+                {
+                    H_max = H;
+                }
             }
 
             return H_max;
@@ -227,17 +229,24 @@ int minimax(option now, int depth, bool MAXIMIZE, int cur_player)
             int H_min = H_BASE;
 
 
-            int H = minimax(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
-
-            if (H < H_min)
+            for (auto p : next_possible_step)
             {
-                H_min = H;
+                option next = now;
+                next.set_disc(p, cur_player);
+                next.flip_discs(p, cur_player);
+
+                int H = minimax(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
+
+                if (H < H_min)
+                {
+                    H_min = H;
+                }
             }
 
             return H_min;
 
         }
-    }
+    
 }
 
 
@@ -248,6 +257,12 @@ int alpha_beta_pruning(option& now, int depth, bool MAXIMIZE, int cur_player)
 {
 
 
+    if (depth == SEARCH_DEPTH)
+    {
+        return now.evaluate();
+    }
+   
+
     std::vector<Point> next_possible_step;
 
     for (int i = 0; i < SIZE; i++) {
@@ -261,38 +276,31 @@ int alpha_beta_pruning(option& now, int depth, bool MAXIMIZE, int cur_player)
     }
 
 
-    for (auto p : next_possible_step)
-    {
-        option next = now;
-
-        if (now.alpha >= now.beta)
-        {
-            break;
-        }
-
-
-        next.flip_discs(p, cur_player);
-
-        if (depth == 0)
-        {
-            return alpha_beta_pruning(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
-        }
-        else if (depth == SEARCH_DEPTH)
-        {
-            return now.evaluate();
-        }
-        else if (MAXIMIZE == true)
+        
+        if (MAXIMIZE == true)
         {
 
             int H_max = -H_BASE;
 
-            int H = alpha_beta_pruning(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
-
-            if (H > H_max)
+            for (auto p : next_possible_step)
             {
-                 now.alpha = H_max = H;
-            }
+                option next = now;
 
+                if (now.alpha >= now.beta)
+                {
+                    break;
+                }
+
+                next.set_disc(p, cur_player);
+                next.flip_discs(p, cur_player);
+
+                int H = alpha_beta_pruning(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
+
+                if (H > H_max)
+                {
+                    now.alpha = H_max = H;
+                }
+            }
             return H_max;
         }
         else if (MAXIMIZE == false)
@@ -301,17 +309,30 @@ int alpha_beta_pruning(option& now, int depth, bool MAXIMIZE, int cur_player)
             int H_min = H_BASE;
 
 
-            int H = alpha_beta_pruning(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
-
-            if (H < H_min)
+            for (auto p : next_possible_step)
             {
-               now.beta  = H_min = H;
+                option next = now;
+
+                if (now.alpha >= now.beta)
+                {
+                    break;
+                }
+
+                next.set_disc(p, cur_player);
+                next.flip_discs(p, cur_player);
+
+                int H = alpha_beta_pruning(next, depth + 1, !MAXIMIZE, get_next_player(cur_player));
+
+                if (H < H_min)
+                {
+                    now.alpha = H_min = H;
+                }
             }
 
             return H_min;
 
         }
-    }
+    
 }
 
 
@@ -353,6 +374,7 @@ void write_valid_spot(std::ofstream& fout) {
 
         option start (board);
 
+       start.set_disc(p, player);
         start.flip_discs(p, player);
 
         start.alpha = max_H;
@@ -370,13 +392,27 @@ void write_valid_spot(std::ofstream& fout) {
 
     Point p = next_valid_spots[next_step_id];
 
-   
-   
+    std::cout << "here" << std::endl;
+    
     // Remember to flush the output to ensure the last action is written to file.
     fout << p.x << " " << p.y << std::endl;
 
     fout.flush();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 int main(int, char** argv) {
