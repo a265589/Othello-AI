@@ -65,15 +65,23 @@ const std::array<Point, 8> directions{ {
 class option
 {
 public:
-     int board[SIZE][SIZE];
+     std::array<std::array<int, SIZE>, SIZE> board;
      std::array<int, 3> disc_count;
 
-    option()
+    option(std::array<std::array<int, SIZE>, SIZE> &board_)
+        :board(board_)
     {
+        disc_count.fill(0);
 
-         disc_count[0] = 0;
-         disc_count[1] = 0;
-         disc_count[2] = 0;
+        for (int i = 0; i < SIZE; i++)
+        {
+            for (int j = 0; j < SIZE; j++)
+            {
+                disc_count[board[i][j]]++;
+            }
+
+        }
+
 
 
     }
@@ -144,9 +152,9 @@ public:
 
                      }
 
-                   //  disc_count[cur_player] += discs.size();
+                      disc_count[cur_player] += discs.size();
 
-                     //disc_count[get_next_player(cur_player)] -= discs.size();
+                     disc_count[get_next_player(cur_player)] -= discs.size();
 
                      break;
 
@@ -196,9 +204,9 @@ int minimax(option now, int depth, bool MAXIMIZE, int cur_player)
 
     for (auto p : next_possible_step)
     {
-        option next;
+        option next = now;
 
-        //next.flip_discs(p, cur_player);
+        next.flip_discs(p, cur_player);
 
         if (depth == 0)
         {
@@ -273,7 +281,7 @@ void write_valid_spot(std::ofstream& fout) {
     //srand(time(NULL));
     // Choose random spot. (Not random uniform here)
     //int index = (rand() % n_valid_spots);
-    int max_H = -100000;
+    int max_H = -H_BASE;
     int next_step_id = 0;
 
    
@@ -282,26 +290,11 @@ void write_valid_spot(std::ofstream& fout) {
     {
         Point p = next_valid_spots[i];
 
-        option start;
+        option start (board);
 
-     
+        start.flip_discs(p, player);
 
-
-        for (int i = 0; i < SIZE; i++)
-        {
-            for (int j = 0; j < SIZE; j++)
-            {
-              start.board[i][j] = board[i][j];
-
-              start.disc_count[board[i][j]]++;
-            }
-        }
-
-
-
-         start.flip_discs(p, player);
-
-        int H = minimax(start, 0, true, get_next_player(player));
+        int H = minimax(start, 0, false, get_next_player(player));
 
         if ( H > max_H)
         {
@@ -312,8 +305,10 @@ void write_valid_spot(std::ofstream& fout) {
     }
 
     Point p = next_valid_spots[next_step_id];
+    
     // Remember to flush the output to ensure the last action is written to file.
     fout << p.x << " " << p.y << std::endl;
+
     fout.flush();
 }
 
