@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 
-#define SEARCH_DEPTH 5
+#define SEARCH_DEPTH 6
 #define H_BASE 10000000
 
 enum SPOT_STATE {
@@ -19,10 +19,12 @@ enum SPOT_STATE {
 enum value {
 
     corner = 2000,
-    c_square = -1000,
-    x_square = -1000,
-    disc = 50,
-    edge = 100
+    c_square = -1500,
+    x_square = -1600,
+    disc = 30,
+    edge = 40,
+    mobility = 45
+   
 };
 
 int get_next_player(int player) {
@@ -196,19 +198,41 @@ public:
     {
         int H = 0;
 
+
+
+        int corner_count = 0;
+     
+
+        for (auto p : corner_coordinate)
+        {
+
+            if (board[p.x][p.y] != EMPTY)
+            {
+                corner_count++;
+            }
+
+
+        }
+
+
+
+
         for (int i = 0; i < SIZE; i++)
         {
 
             for (int j = 0; j < SIZE; j++)
             {
+
+                
+
                 if (board[i][j] == player)
                 {
                     Point p(i, j);
 
                     if (p == corner_coordinate[0] || p == corner_coordinate[1] || p == corner_coordinate[2] || p == corner_coordinate[3])
                     {
-
                         H += corner;
+                        
                     }
                     else if (p == corner_coordinate[0] + x_dir[0] || p == corner_coordinate[1] + x_dir[1] || p == corner_coordinate[2] + x_dir[2] || p == corner_coordinate[3] + x_dir[3])
                     {
@@ -216,17 +240,49 @@ public:
                         H += x_square;
 
                     }
-                    else if (i == 0 || i == SIZE - 1 || j == 0 || j == SIZE - 1)
+                    else if (i == 0 || i == SIZE - 1 )
                     {
-                        H += edge;
+                        if (j == 1 || j == SIZE - 2)
+                        {
+                            H += c_square;
+                        }
+                        else
+                        {
+                            H += edge;
+                        }
+                                            
                     }
-                    else
+                    else if (j == 0 || j == SIZE - 1)
                     {
-                        H += disc;
+                        if (i == 1 || i == SIZE - 2)
+                        {
+                            H += c_square;
+                        }
+                        else
+                        {
+                            H += edge;
+                        }
+                    } 
+                    else if(corner>=2)
+                    {
+                        H = H + disc;
                     }
 
                 }
 
+                Point p(i, j);
+               
+                if (corner_count < 2)
+                {
+
+
+                    if (board[i][j] != EMPTY)
+                        continue;
+                    if (is_spot_valid(p, player))
+                        H += mobility;
+                }
+
+             
 
 
             }
@@ -250,7 +306,6 @@ int minimax(option now, int depth, bool MAXIMIZE, int cur_player)
     if (depth == SEARCH_DEPTH)
     {
 
-      //  std::cout << now.evaluate();
         return now.evaluate();
 
     }
@@ -342,6 +397,7 @@ int alpha_beta_pruning(option& now, int depth, bool MAXIMIZE, int cur_player)
                 next_possible_step.push_back(p);
         }
     }
+
 
 
 
