@@ -18,10 +18,8 @@ enum SPOT_STATE {
 
 enum value {
 
-    corner = 1000,
-    corner_ene = -1500,
- //  c_square = -1300,
-   // x_square = -1500,
+    corner = 1200,
+    corner_ene = -1600,
     disc = 50,
     edge = 50,
     mobility = 40 
@@ -224,9 +222,6 @@ public:
             for (int j = 0; j < SIZE; j++)
             {
 
-                
-
-             
                     Point p(i, j);
 
                     if (p == corner_coordinate[0] || p == corner_coordinate[1] || p == corner_coordinate[2] || p == corner_coordinate[3])
@@ -256,27 +251,15 @@ public:
                     }
                     else if (i == 0 || i == SIZE - 1 )
                     {
-                        if (j == 1 || j == SIZE - 2)
-                        {
-                            if (board[i][j] == player)
-                            {
-                        //        H += c_square;
-                            }
-                            else  if (board[i][j] == get_next_player(player))
-                            {
-                             //   H -= c_square;
-                            }
-                           
-                        }
-                        else
+                        if(board[i][0]!=EMPTY&& board[i][SIZE-2] != EMPTY)
                         {
                            
 
-                          /*  if (board[i][j] == player)
+                            if (board[i][j] == player)
                             {
                                 H += edge;;
                             }
-                            else  if (board[i][j] == get_next_player(player))
+                          /*  else  if (board[i][j] == get_next_player(player))
                             {
                                 H -= edge;
                             }*/
@@ -285,19 +268,15 @@ public:
                     }
                     else if (j == 0 || j == SIZE - 1)
                     {
-                        if (i == 1 || i == SIZE - 2)
+                       
+                        if (board[0][j] != EMPTY && board[SIZE-2][j] != EMPTY)
                         {
+
+
                             if (board[i][j] == player)
                             {
-                          //      H += c_square;
+                                H += edge;;
                             }
-                            else  if (board[i][j] == get_next_player(player))
-                            {
-                             //   H -= c_square;
-                            }
-                        }
-                        else
-                        {
 
                           /*  if (board[i][j] == player)
                             {
@@ -308,8 +287,9 @@ public:
                                 H -= edge;
                             }*/
                         }
-                    } 
-                    else  if (disc_count[WHITE] + disc_count[BLACK] >= 55)
+                    }
+
+                    if (disc_count[WHITE] + disc_count[BLACK] >= 50)
                     {
 
                           if (board[i][j] == player)
@@ -326,25 +306,16 @@ public:
                 
 
                
-                if (disc_count[WHITE] + disc_count[BLACK] < 48)
+                if (disc_count[WHITE] + disc_count[BLACK] < 50)
                 {
-
                     if (board[i][j] != EMPTY)
                         continue;
                     if (is_spot_valid(p, player))
                         H += mobility;
                 }
-
-             
-
-
             }
-
         }
-
-
-
-        return H;// disc_count[player] * 10 - disc_count[get_next_player(player)] * 10;
+        return H;
     }
 
 };
